@@ -1,5 +1,7 @@
 # pluginhook
 
+This fork switches off the pipeline filtering functionality. Instead it prints out stdout after each scriptrun.
+
 A simple plugin system for Bash programs that's better than just hook scripts.
 
 ## Plugins as a better way
@@ -25,35 +27,6 @@ You'd instead trigger like this:
     pluginhook post-commit $REV $USER
 
 The `pluginhook` command simply loops through all plugin directories found in the path defined by the environment variable `PLUGIN_PATH` and passes the same arguments to any hook scripts by that name. This means installing a plugin is as simple as putting it in your `PLUGIN_PATH`. Then any plugin that has the `post-commit` hook script will be run.
-
-## Pipeline filtering with plugins
-
-You don't just get a "broadcast" mechanism for arguments. You also get stream pipelining. If you pipe a stream
-into pluginhook, it will be passed *through* each plugin hook, letting each plugin act as a filtering process. By clearly
-defining how a hook should be used and how it can play well with others, this becomes very powerful infrastructure.
-
-Here is a plugin we'll call `upper` implementing a `text` hook (which would be in `$PLUGIN_PATH/upper/text`):
-
-    #!/usr/bin/env python
-    import sys
-    sys.stdout.write(sys.stdin.read().upper())
-  
-Here is a plugin we'll call `reverse` that also implements a `text` hook (`$PLUGIN_PATH/reverse/text`):
-
-    #!/usr/bin/env ruby
-    puts STDIN.read.strip.reverse
-    
-One plugin uses Python to implement the hook, the other uses Ruby. But it doesn't matter, they work together when you trigger the hook:
-
-    $ echo "hello world" | pluginhook text
-    DLROW OLLEH
-
-Only plugins that implement a hook are used as filters for that hook, so there's no need to implement pass-through hooks if a
-plugin doesn't care about a hook.
-
-If ordering is important, you can always rename your plugin directory to start with a number, which will define an order of
-execution. A plugin author might care about when it is run, but it's up to the user to take their advice or decide
-to run it in a different position in the order, by simply renaming the plugin script.
 
 ## What's wrong with just hook scripts?
 
